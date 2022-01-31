@@ -9,7 +9,7 @@ import androidx.lifecycle.MutableLiveData
 
 class PlayerViewModel(application: Application) : AndroidViewModel(application) {
 
-    val mediaPlayer = MediaPlayer()
+    val mediaPlayer = MyMediaPlayer()
 
     private val _progressBarVisibility = MutableLiveData(View.VISIBLE)
     val progressBarVisibility : LiveData<Int> = _progressBarVisibility
@@ -36,6 +36,10 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             }
             prepareAsync()
         }
+    }
+
+    fun emitVideoResolution() {
+        _videoResolution.value = _videoResolution.value
     }
 
     override fun onCleared() {
