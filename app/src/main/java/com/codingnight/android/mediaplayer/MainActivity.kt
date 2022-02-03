@@ -12,6 +12,9 @@ import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private lateinit var playerViewModel: PlayerViewModel
@@ -29,6 +32,8 @@ class MainActivity : AppCompatActivity() {
         progressBar = findViewById(R.id.progressBar)
         controllerFrame = findViewById(R.id.controller_frame)
         seekBar = findViewById(R.id.seekBar)
+
+        updatePlayerProgress()
 
         playerViewModel = ViewModelProvider(this).get(PlayerViewModel::class.java).apply {
             progressBarVisibility.observe(this@MainActivity) {
@@ -68,6 +73,15 @@ class MainActivity : AppCompatActivity() {
             override fun surfaceDestroyed(holder: SurfaceHolder) {
             }
         })
+    }
+
+    private fun updatePlayerProgress() {
+        lifecycleScope.launch {
+            while (true) {
+                delay(500)
+                seekBar.progress = playerViewModel.mediaPlayer.currentPosition
+            }
+        }
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
