@@ -47,6 +47,10 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             setOnBufferingUpdateListener { _, percent ->
                 _bufferPercent.value = percent
             }
+            setOnSeekCompleteListener {
+                mediaPlayer.start()
+                _progressBarVisibility.value = View.INVISIBLE
+            }
             prepareAsync()
         }
     }
@@ -63,6 +67,11 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         } else {
             _controllerFrameVisibility.value = View.INVISIBLE
         }
+    }
+
+    fun playerSeekToProgress(progress: Int) {
+        _progressBarVisibility.value = View.VISIBLE
+        mediaPlayer.seekTo(progress)
     }
 
     fun emitVideoResolution() {
