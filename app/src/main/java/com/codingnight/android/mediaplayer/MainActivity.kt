@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 
 class MainActivity : AppCompatActivity() {
@@ -16,6 +17,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
     private lateinit var surfaceView: SurfaceView
     private lateinit var playerFrame: FrameLayout
+    private lateinit var controllerFrame: FrameLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,6 +25,7 @@ class MainActivity : AppCompatActivity() {
         surfaceView = findViewById(R.id.surfaceView)
         playerFrame = findViewById(R.id.playerFrame)
         progressBar = findViewById(R.id.progressBar)
+        controllerFrame = findViewById(R.id.controller_frame)
 
         playerViewModel = ViewModelProvider(this).get(PlayerViewModel::class.java).apply {
             progressBarVisibility.observe(this@MainActivity) {
@@ -31,10 +34,16 @@ class MainActivity : AppCompatActivity() {
             videoResolution.observe(this@MainActivity) {
                 playerFrame.post { resizePlayer(it.first, it.second) }
             }
+            controllerFrameVisibility.observe(this@MainActivity, Observer {
+                controllerFrame.visibility = it
+            })
         }
 
         lifecycle.addObserver(playerViewModel.mediaPlayer)
 
+        playerFrame.setOnClickListener {
+            playerViewModel.toggleControllerVisibility()
+        }
         surfaceView.holder.addCallback(object : SurfaceHolder.Callback {
             override fun surfaceCreated(holder: SurfaceHolder) {
             }
