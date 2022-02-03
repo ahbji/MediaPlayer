@@ -9,9 +9,16 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+enum class PlayerStatus {
+    Playing, Paused, Completed, NotReady
+}
+
 class PlayerViewModel(application: Application) : AndroidViewModel(application) {
 
     val mediaPlayer = MyMediaPlayer()
+
+    private val _playerStatus = MutableLiveData(PlayerStatus.NotReady)
+    val playerStatus: LiveData<PlayerStatus> = _playerStatus
 
     private val _bufferPercent = MutableLiveData(0)
     val bufferPercent: LiveData<Int> = _bufferPercent
@@ -35,11 +42,13 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         mediaPlayer.apply {
             reset()
             _progressBarVisibility.value = View.VISIBLE
+            _playerStatus.value = PlayerStatus.NotReady
             setDataSource("https://stream7.iqilu.com/10339/upload_transcode/202002/18/20200218093206z8V1JuPlpe.mp4")
             setOnPreparedListener {
                 _progressBarVisibility.value = View.INVISIBLE
-                isLooping = true
+//                isLooping = true
                 it.start()
+                _playerStatus.value = PlayerStatus.Playing
             }
             setOnVideoSizeChangedListener { _, width, height ->
                 _videoResolution.value = Pair(width, height)
@@ -50,6 +59,9 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             setOnSeekCompleteListener {
                 mediaPlayer.start()
                 _progressBarVisibility.value = View.INVISIBLE
+            }
+            setOnCompletionListener {
+                _playerStatus.value = PlayerStatus.Completed
             }
             prepareAsync()
         }
@@ -66,6 +78,24 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             }
         } else {
             _controllerFrameVisibility.value = View.INVISIBLE
+        }
+    }
+
+    fun togglePlayerStatus() {
+        when(_playerStatus.value) {
+            PlayerStatus.Playing -> {
+                mediaPlayer.pausePlayer()
+                _playerStatus.value = PlayerStatus.Paused
+            }
+            PlayerStatus.Paused -> {
+                mediaPlayer.start()
+                _playerStatus.value = PlayerStatus.Playing
+            }
+            PlayerStatus.Completed -> {
+                mediaPlayer.start()
+                _playerStatus.value = PlayerStatus.Playing
+            }
+            else -> return
         }
     }
 

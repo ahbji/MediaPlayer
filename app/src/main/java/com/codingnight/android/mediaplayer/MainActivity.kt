@@ -7,6 +7,7 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.View
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
@@ -23,6 +24,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var playerFrame: FrameLayout
     private lateinit var controllerFrame: FrameLayout
     private lateinit var seekBar: SeekBar
+    private lateinit var controllerButton: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,6 +34,7 @@ class MainActivity : AppCompatActivity() {
         progressBar = findViewById(R.id.progressBar)
         controllerFrame = findViewById(R.id.controller_frame)
         seekBar = findViewById(R.id.seekBar)
+        controllerButton = findViewById(R.id.controllerButton)
 
         updatePlayerProgress()
 
@@ -49,9 +52,22 @@ class MainActivity : AppCompatActivity() {
             bufferPercent.observe(this@MainActivity, Observer {
                 seekBar.secondaryProgress = seekBar.max * it / 100
             })
+            playerStatus.observe(this@MainActivity, Observer {
+                controllerButton.isClickable = true
+                when (it) {
+                    PlayerStatus.Paused -> controllerButton.setImageResource(R.drawable.ic_baseline_play_arrow_24)
+                    PlayerStatus.Completed -> controllerButton.setImageResource(R.drawable.ic_baseline_replay_24)
+                    PlayerStatus.NotReady -> controllerButton.isClickable = false
+                    else -> controllerButton.setImageResource(R.drawable.ic_baseline_pause_24)
+                }
+            })
         }
 
         lifecycle.addObserver(playerViewModel.mediaPlayer)
+
+        controllerButton.setOnClickListener {
+            playerViewModel.togglePlayerStatus()
+        }
 
         playerFrame.setOnClickListener {
             playerViewModel.toggleControllerVisibility()
