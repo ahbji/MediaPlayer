@@ -8,6 +8,7 @@ import android.view.SurfaceView
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ProgressBar
+import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -18,6 +19,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var surfaceView: SurfaceView
     private lateinit var playerFrame: FrameLayout
     private lateinit var controllerFrame: FrameLayout
+    private lateinit var seekBar: SeekBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,16 +28,21 @@ class MainActivity : AppCompatActivity() {
         playerFrame = findViewById(R.id.playerFrame)
         progressBar = findViewById(R.id.progressBar)
         controllerFrame = findViewById(R.id.controller_frame)
+        seekBar = findViewById(R.id.seekBar)
 
         playerViewModel = ViewModelProvider(this).get(PlayerViewModel::class.java).apply {
             progressBarVisibility.observe(this@MainActivity) {
                 progressBar.visibility = it
             }
             videoResolution.observe(this@MainActivity) {
+                seekBar.max = mediaPlayer.duration
                 playerFrame.post { resizePlayer(it.first, it.second) }
             }
             controllerFrameVisibility.observe(this@MainActivity, Observer {
                 controllerFrame.visibility = it
+            })
+            bufferPercent.observe(this@MainActivity, Observer {
+                seekBar.secondaryProgress = seekBar.max * it / 100
             })
         }
 

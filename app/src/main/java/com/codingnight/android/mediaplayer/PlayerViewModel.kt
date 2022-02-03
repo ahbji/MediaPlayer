@@ -13,6 +13,9 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
     val mediaPlayer = MyMediaPlayer()
 
+    private val _bufferPercent = MutableLiveData(0)
+    val bufferPercent: LiveData<Int> = _bufferPercent
+
     private val _controllerFrameVisibility = MutableLiveData(View.INVISIBLE)
     val controllerFrameVisibility: LiveData<Int> = _controllerFrameVisibility
 
@@ -38,8 +41,11 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 isLooping = true
                 it.start()
             }
-            setOnVideoSizeChangedListener { mp, width, height ->
+            setOnVideoSizeChangedListener { _, width, height ->
                 _videoResolution.value = Pair(width, height)
+            }
+            setOnBufferingUpdateListener { _, percent ->
+                _bufferPercent.value = percent
             }
             prepareAsync()
         }
